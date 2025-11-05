@@ -9,21 +9,6 @@ The above aim to demonstrate computational biology concepts used in genome analy
 
 ---
 
-## 📖 Table of Contents
-
-- [Overview](#-overview)
-- [Project Structure](#-project-structure)
-- [Algorithms](#-algorithms)
-  - [Naïve 2-Mismatch Matcher](#1-naïve-2-mismatch-matcher)
-  - [Boyer–Moore with Counts](#2-boyer–moore-with-counts)
-- [Usage](#-usage)
-- [Example Output](#-example-output)
-- [Dependencies](#-dependencies)
-- [License](#-license)
-- [Author](#-author)
-
----
-
 ## 🧠 Overview
 
 Modern sequencing technologies produce millions of short DNA fragments ("reads") that must be aligned to a **reference genome**.  
@@ -47,4 +32,6 @@ This project provides two simple but educational approaches for this problem:
 ```bash
 python naive_2mm.py data/myReads.fastq data/lambda_virus.fa
 
+🧬 Genomic String Matching
 
+This repository
