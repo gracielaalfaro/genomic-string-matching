@@ -36,54 +36,15 @@ This project provides two simple but educational approaches for this problem:
 
 ## 📁 Project Structure
 
-> ⚠️ Large genome files are excluded from the repository — only small test files are included for demonstration purposes.
+
+> Large genome files are not included; small demo files can be added to the `data/` folder.
 
 ---
 
-## 🔬 Algorithms
+## 🚀 Usage
 
-### 1️⃣ Naïve 2-Mismatch Matcher
-**File:** `naive_2mm.py`
-
-This algorithm scans the reference genome and compares each substring of equal length to the read, allowing up to **2 mismatches**.  
-Only reads where **all base quality scores > 5** are considered.
-
-**Output:**  
-For each read that passes the quality filter, the program prints:
-and reports how many reads were filtered out due to low quality.
-
----
-
-### 2️⃣ Boyer–Moore with Counts
-**File:** `bm_with_counts.py`
-
-An extension of the classic **Boyer–Moore** string search algorithm.  
-It returns:
-- The list of **match positions**
-- The number of **alignments** attempted
-- The number of **character comparisons**
-
-**Example:**
-```python
-p = 'word'
-t = 'there would have been a time for such a word'
-
-lowercase_alphabet = 'abcdefghijklmnopqrstuvwxyz '
-p_bm = BoyerMoore(p, lowercase_alphabet)
-occurrences, n_alignments, n_comparisons = boyer_moore_with_counts(p, p_bm, t)
-
-print(occurrences, n_alignments, n_comparisons)
-# Output: [40], 12, 15
-GGCGCGGTGGCTCACGCCTGTAATCCCAGCACTTTGGGAGGCCGAGG
+### Run Naïve 2-Mismatch Matcher
+```bash
 python naive_2mm.py data/myReads.fastq data/lambda_virus.fa
-python bm_with_counts.py
-Read_1 found at positions [1023, 29810]
-Read_2 found at positions [1045]
-Read_3 did not pass quality filter
----
-Total reads processed: 3
-Reads filtered out (quality ≤ 5): 1
-Occurrences: [40]
-Alignments tried: 12
-Character comparisons: 15
+
 
