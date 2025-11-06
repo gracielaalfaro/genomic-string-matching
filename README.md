@@ -32,6 +32,3 @@ This project provides two simple but educational approaches for this problem:
 ```bash
 python naive_2mm.py data/myReads.fastq data/lambda_virus.fa
 
-🧬 Genomic String Matching
-
-This repository
