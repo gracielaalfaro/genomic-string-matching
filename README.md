@@ -1,3 +1,4 @@
+Author : Graciela Alfaro 2025
 
 # 🧬 Genomic String Matching
 
@@ -33,4 +34,4 @@ This project provides two simple but educational approaches for this problem:
 ```bash
 python naive_2mm.py data/myReads.fastq data/lambda_virus.fa
 
-Author : Graciela Alfaro 
+
