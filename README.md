@@ -1,3 +1,4 @@
+
 # 🧬 Genomic String Matching
 
 This repository implements two DNA sequence matching algorithms in Python:
@@ -32,3 +33,4 @@ This project provides two simple but educational approaches for this problem:
 ```bash
 python naive_2mm.py data/myReads.fastq data/lambda_virus.fa
 
+Author : Graciela Alfaro 
