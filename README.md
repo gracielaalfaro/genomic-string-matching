@@ -1,6 +1,6 @@
-Author : Graciela Alfaro 2025
-
 # 🧬 Genomic String Matching
+
+**Author:** Graciela Alfaro (2025)
 
 This repository implements two DNA sequence matching algorithms in Python:
 
