@@ -1,0 +1,22 @@
+/Users/xaiair/PycharmProjects/PythonProject/.venv/bin/python /Users/xaiair/PycharmProjects/PythonProject/bm_prec.py 
+======================================================================
+Testing with example:
+======================================================================
+Pattern: 'word'
+Text: 'there would have been a time for such a word'
+Result: [40], 12, 15
+Expected: [40], 12, 15
+✓ TEST PASSED!
+
+======================================================================
+Processing chr1.GRCh38.excerpt.fasta...
+======================================================================
+Genome length: 800000 bp
+Pattern length: 47 bp
+Pattern: GGCGCGGTGGCTCACGCCTGTAATCCCAGCACTTTGGGAGGCCGAGG
+
+Occurrences: [56922]
+Alignments tried: 129531
+Character comparisons: 167544
+
+Process finished with exit code 0
