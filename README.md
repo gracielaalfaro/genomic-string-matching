@@ -32,6 +32,18 @@ This project provides two simple but educational approaches for this problem:
 
 ### Run Naïve 2-Mismatch Matcher
 ```bash
-python naive_2mm.py data/myReads.fastq data/lambda_virus.fa
+python naive_2mm.py
+python bm_prec.py
 
+```
+---
+
+
+## 📊 Outputs
+Example result files are stored in the [`outputs/`](outputs) folder:
+
+| File | Description |
+|------|--------------|
+| `naive2mm_output.txt` | Output of the naïve 2-mismatch matcher on `lambda_virus.fa` |
+| `bm_prec_output.txt` | Output of the Boyer–Moore matcher on `chr1.GRCh38.excerpt.fasta` |
 
