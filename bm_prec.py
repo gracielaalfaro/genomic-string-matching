@@ -1,89 +1,109 @@
 class BoyerMoore:
-    """Encapsulates pattern and its associated Boyer-Moore preprocessing"""
-    
     def __init__(self, p, alphabet='ACGT'):
         self.p = p
         self.alphabet = alphabet
-        # Create map from alphabet characters to integers
-        self.amap = {char: i for i, char in enumerate(self.alphabet)}
-        # Make bad character rule table
-        self.bad_char = self.dense_bad_char_tab(p, self.amap)
-        # Make good suffix rule table
-        self.good_suffix = self.good_suffix_table(p)
-        self.full_shift = self.full_shift_table(p)
-    
-    def bad_character_rule(self, i, c):
-        """Return # skips given by bad character rule at offset i"""
-        assert c in self.amap
-        ci = self.amap[c]
-        assert i < len(self.bad_char)
-        return self.bad_char[i][ci]
-    
-    def good_suffix_rule(self, i):
-        """Return # skips given by good suffix rule at offset i"""
-        return self.good_suffix[i]
-    
-    def match_skip(self):
-        """Return # skips given by match skip rule"""
-        return len(self.p) - self.full_shift[-1]
-    
-    def dense_bad_char_tab(self, p, amap):
-        """Make dense bad character table"""
-        tab = []
-        nxt = [0] * len(amap)
-        for i in range(len(p)):
+        self.amap = {c: i for i, c in enumerate(alphabet)}
+        self.bad_char = self.bad_character_table(p, self.amap)
+        self.n = self.n_array(p)
+        self.l_prime = self.good_suffix_table(p, self.n)
+        self.l_prime_rev = self.match_skip_table(p, self.n)
+
+    # ---------- BAD CHARACTER RULE ----------
+    def bad_character_table(self, p, amap):
+        n = len(amap)
+        m = len(p)
+        occ = [[-1] * m for _ in range(n)]
+        for i in range(m):
             c = p[i]
-            assert c in amap
-            tab.append(list(nxt))
-            nxt[amap[c]] = i + 1
-        return tab
-    
+            if c in amap:
+                ci = amap[c]
+                for j in range(i, m):
+                    occ[ci][j] = i
+        return occ
+
+    def bad_character_rule(self, i, c):
+        if c not in self.amap:
+            return i + 1
+        ci = self.amap[c]
+        if self.bad_char[ci][i] == -1:
+            return i + 1
+        return i - self.bad_char[ci][i]
+
+    # ---------- GOOD SUFFIX RULE ----------
+    def z_array(self, s):
+        Z = [0] * len(s)
+        Z[0] = len(s)
+        right, left = 0, 0
+        for k in range(1, len(s)):
+            if k > right:
+                n = 0
+                while n + k < len(s) and s[n] == s[n + k]:
+                    n += 1
+                Z[k] = n
+                if n > 0:
+                    left = k
+                    right = k + n - 1
+            else:
+                k1 = k - left
+                beta_len = right - k + 1
+                if Z[k1] < beta_len:
+                    Z[k] = Z[k1]
+                else:
+                    n = right + 1
+                    while n < len(s) and s[n] == s[n - k]:
+                        n += 1
+                    Z[k] = n - k
+                    left = k
+                    right = n - 1
+        return Z
+
     def n_array(self, s):
-        """Compute N array for string s"""
-        n = [0] * len(s)
-        for i in range(1, len(s)):
-            k = i - 1
-            while k >= 0 and s[k] == s[i + (i - 1 - k)]:
-                k -= 1
-            n[i] = i - k - 1
-        return n
-    
-    def good_suffix_table(self, p):
-        """Make good suffix table"""
-        n = self.n_array(p)
-        lp = [0] * len(p)
-        for j in range(len(p) - 1):
-            i = len(p) - n[j]
-            if i < len(p):
-                lp[i] = j + 1
-        return lp
-    
-    def full_shift_table(self, p):
-        """Make full shift table"""
-        n = self.n_array(p)
-        lp = [0] * len(p)
-        for i in range(len(p)):
-            lp[i] = n[i]
-        for i in range(len(p) - 1, -1, -1):
-            if lp[i] == 0:
-                lp[i] = lp[i + 1] if i < len(p) - 1 else 0
+        """Generate N array (length of longest suffix of s[i:] matching a prefix of s)."""
+        rev_s = s[::-1]
+        z_rev = self.z_array(rev_s)
+        return z_rev[::-1]
+
+    def good_suffix_table(self, p, n):
+        m = len(p)
+        l_prime = [0] * m
+        for j in range(m - 1):
+            i = m - n[j]
+            if i < m:
+                l_prime[i] = j + 1
+        return l_prime
+
+    def match_skip_table(self, p, n):
+        m = len(p)
+        lp = [0] * (m + 1)
+        longest = 0
+        for i in range(m - 1, -1, -1):
+            if n[i] == i + 1:
+                longest = n[i]
+            lp[m - i - 1] = longest
         return lp
 
+    def good_suffix_rule(self, j):
+        m = len(self.p)
+        if j == m - 1:
+            return 0
+        i = j + 1
+        if self.l_prime[i] > 0:
+            return m - self.l_prime[i] - 1
+        return m - self.l_prime_rev[i]
+
+    def match_skip(self):
+        return len(self.p) - self.l_prime_rev[1]
+
+# ---------- MAIN FUNCTION ----------
 def boyer_moore_with_counts(p, p_bm, t):
-    """
-    Boyer-Moore algorithm that returns occurrences and statistics
-    Returns: (occurrences, num_alignments, num_character_comparisons)
-    """
-    i = 0
     occurrences = []
-    n_alignments = 0  # number of alignments tried
-    n_comparisons = 0  # number of character comparisons
-    
-    while i < len(t) - len(p) + 1:
+    n_alignments = 0
+    n_comparisons = 0
+    i = 0
+    while i <= len(t) - len(p):
         n_alignments += 1
         shift = 1
         mismatched = False
-        
         for j in range(len(p) - 1, -1, -1):
             n_comparisons += 1
             if p[j] != t[i + j]:
@@ -92,74 +112,53 @@ def boyer_moore_with_counts(p, p_bm, t):
                 shift = max(shift, skip_bc, skip_gs)
                 mismatched = True
                 break
-        
         if not mismatched:
             occurrences.append(i)
-            skip_gs = p_bm.match_skip()
-            shift = max(shift, skip_gs)
-        
+            shift = max(shift, p_bm.match_skip())
         i += shift
-    
     return occurrences, n_alignments, n_comparisons
 
-def readGenome(filename):
-    """Parse FASTA file and return genome as a single string"""
-    genome = ''
-    with open(filename, 'r') as f:
-        for line in f:
-            if not line[0] == '>':
-                genome += line.rstrip()
-    return genome
-
-# Test with the provided example
-def test_example():
+# ---------- TEST HARNESS ----------
+def main():
     print("=" * 70)
     print("Testing with example:")
     print("=" * 70)
-    p = 'word'
-    t = 'there would have been a time for such a word'
-    lowercase_alphabet = 'abcdefghijklmnopqrstuvwxyz '
-    p_bm = BoyerMoore(p, lowercase_alphabet)
-    occurrences, n_algn, n_char = boyer_moore_with_counts(p, p_bm, t)
+    p = "word"
+    t = "there would have been a time for such a word"
+    alphabet = "abcdefghijklmnopqrstuvwxyz "
+    p_bm = BoyerMoore(p, alphabet)
+    occurrences, n_align, n_char = boyer_moore_with_counts(p, p_bm, t)
     print(f"Pattern: '{p}'")
     print(f"Text: '{t}'")
-    print(f"Result: {occurrences}, {n_algn}, {n_char}")
-    print(f"Expected: [40], 12, 15")
-    if occurrences == [40] and n_algn == 12 and n_char == 15:
+    print(f"Result: {occurrences}, {n_align}, {n_char}")
+    print("Expected: [40], 12, 15")
+    if occurrences == [40] and n_align == 12 and n_char == 15:
         print("✓ TEST PASSED!")
     else:
         print("✗ TEST FAILED!")
     print()
 
-# Main function to run on chr1.GRCh38.excerpt.fasta
-def main():
-    # Run test
-    test_example()
-    
-    # Read the chromosome file
+    # Genome test (optional)
     print("=" * 70)
     print("Processing chr1.GRCh38.excerpt.fasta...")
     print("=" * 70)
-    genome = readGenome('chr1.GRCh38.excerpt.fasta')
-    print(f"Genome length: {len(genome)} bp")
-    
-    # The read to search for
-    p = 'GGCGCGGTGGCTCACGCCTGTAATCCCAGCACTTTGGGAGGCCGAGG'
-    print(f"Pattern length: {len(p)} bp")
-    print(f"Pattern: {p}")
-    print()
-    
-    # Create Boyer-Moore preprocessing
-    p_bm = BoyerMoore(p, 'ACGT')
-    
-    # Run Boyer-Moore with counts
-    occurrences, n_alignments, n_comparisons = boyer_moore_with_counts(p, p_bm, genome)
-    
-    print("Results:")
-    print(f"  Occurrences found at positions: {occurrences}")
-    print(f"  Number of alignments tried: {n_alignments}")
-    print(f"  Number of character comparisons: {n_comparisons}")
-    print("=" * 70)
+    try:
+        with open("chr1.GRCh38.excerpt.fasta") as f:
+            lines = f.readlines()
+        genome = ''.join([line.strip() for line in lines if not line.startswith('>')])
+        print(f"Genome length: {len(genome)} bp")
+
+        p = "GGCGCGGTGGCTCACGCCTGTAATCCCAGCACTTTGGGAGGCCGAGG"
+        print(f"Pattern length: {len(p)} bp")
+        print(f"Pattern: {p}")
+
+        p_bm = BoyerMoore(p, "ACGT")
+        occurrences, n_align, n_char = boyer_moore_with_counts(p, p_bm, genome)
+        print(f"\nOccurrences: {occurrences}")
+        print(f"Alignments tried: {n_align}")
+        print(f"Character comparisons: {n_char}")
+    except FileNotFoundError:
+        print("chr1.GRCh38.excerpt.fasta not found — skipping genome test.")
 
 if __name__ == "__main__":
     main()
